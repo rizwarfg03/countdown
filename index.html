@@ -80,36 +80,44 @@ Loading...
 // GANTI SESUAI KEBUTUHAN
 //=========================
 
-const targetTime = new Date("2026-07-29T00:20:00+07:00").getTime();
+const targetTime = new Date("2026-07-29T01:00:00+07:00").getTime();
 
 const formURL =
 "https://docs.google.com/forms/d/e/1FAIpQLScDg7x9OF5NytZekYzHa5t74LEYRzhaAHl3Ins_caUx31XbxQ/viewform";
 
 //=========================
 
-// Ambil waktu server
-
 let serverOffset = 0;
 
-async function syncTime(){
+// Sinkronisasi waktu dari Netlify
+async function syncServerTime(){
 
-    const response = await fetch("https://worldtimeapi.org/api/timezone/Asia/Jakarta");
+    try{
 
-    const data = await response.json();
+        const response = await fetch("/.netlify/functions/time",{
+            cache:"no-store"
+        });
 
-    const serverNow = new Date(data.datetime).getTime();
+        const data = await response.json();
 
-    const localNow = Date.now();
+        serverOffset = data.time-Date.now();
 
-    serverOffset = serverNow-localNow;
+        console.log("Server Offset :",serverOffset,"ms");
+
+    }catch(err){
+
+        console.error(err);
+
+    }
 
 }
 
-function update(){
+// Update Countdown
+function updateCountdown(){
 
-    const now = Date.now()+serverOffset;
+    const now=Date.now()+serverOffset;
 
-    const distance = targetTime-now;
+    const distance=targetTime-now;
 
     document.getElementById("clock").innerHTML=
     "Jam Server : "+
@@ -141,9 +149,13 @@ function update(){
 
 async function start(){
 
-    await syncTime();
+    await syncServerTime();
 
-    setInterval(update,200);
+    updateCountdown();
+
+    setInterval(updateCountdown,100);
+
+    setInterval(syncServerTime,5000);
 
 }
 
