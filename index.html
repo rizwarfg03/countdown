@@ -89,6 +89,12 @@ const formURL =
 
 let serverOffset = 0;
 
+let redirected = false;
+
+let countdownInterval;
+
+let syncInterval;
+
 // Sinkronisasi waktu dari Netlify
 async function syncServerTime(){
 
@@ -128,7 +134,18 @@ function updateCountdown(){
         document.getElementById("countdown").innerHTML=
         "Membuka Form...";
 
-        window.location.href=formURL;
+        if(!redirected){
+
+        redirected = true;
+
+        clearInterval(countdownInterval);
+
+        clearInterval(syncInterval);
+
+        window.location.replace(formURL);
+
+    }
+
 
         return;
 
@@ -153,9 +170,9 @@ async function start(){
 
     updateCountdown();
 
-    setInterval(updateCountdown,100);
+    countdownInterval = setInterval(updateCountdown,100);
 
-    setInterval(syncServerTime,5000);
+    syncInterval = setInterval(syncServerTime,5000);
 
 }
 
